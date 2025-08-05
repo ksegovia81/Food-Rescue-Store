@@ -8,22 +8,32 @@ import {
 
 const router = express.Router();
 
-// Input validation middleware
+// ✅ Middleware: Validate JSON input for POST and PUT
 const validateProductInput = (req, res, next) => {
-  if (req.method === 'POST' || req.method === 'PUT') {
-    if (!req.is('application/json')) {
-      return res.status(400).json({
-        success: false,
-        message: "Content-Type must be application/json"
-      });
-    }
+  if (['POST', 'PUT'].includes(req.method) && !req.is('application/json')) {
+    return res.status(400).json({
+      success: false,
+      message: 'Content-Type must be application/json'
+    });
   }
   next();
 };
 
-router.get('/', getProducts);
-router.post('/', validateProductInput, createProduct);
-router.put('/:id', validateProductInput, updateProduct);
-router.delete('/:id', deleteProduct);
+// ✅ Optional: Route-level logging (for debugging)
+router.use((req, _res, next) => {
+  console.log(`Product route hit: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// ✅ Routes
+router
+  .route('/')
+  .get(getProducts)
+  .post(validateProductInput, createProduct);
+
+router
+  .route('/:id')
+  .put(validateProductInput, updateProduct)
+  .delete(deleteProduct);
 
 export default router;
